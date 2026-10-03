@@ -265,6 +265,19 @@ jobs:
             # 存储版本号到 GitHub 环境变量
             echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
             echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
+            # 修复 SukiSU Ultra main 分支 uapi 符号链接问题（CI 环境 symlink 未解析导致 uapi/*.h 找不到）
+            echo "修复 uapi 头文件符号链接..."
+            if [ -f uapi/supercall.h ] && [ ! -f kernel/include/uapi/supercall.h ]; then
+              rm -f kernel/include/uapi
+              mkdir -p kernel/include
+              cp -r uapi kernel/include/uapi
+              echo "已将 root uapi/ 复制到 kernel/include/uapi/"
+            elif [ -f kernel/include/uapi/supercall.h ] && [ ! -f uapi/supercall.h ]; then
+              rm -f uapi
+              cp -r kernel/include/uapi uapi
+              echo "已将 kernel/include/uapi/ 复制到 root uapi/"
+            fi
+            test -f kernel/include/uapi/supercall.h && echo "OK: supercall.h 就位" || echo "WARN: supercall.h 仍缺失"
           elif [[ ${{ github.event.inputs.ksu_type }} == "ksunext" ]]; then
             echo "正在配置KernelSU Next..."
             curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/refs/heads/dev-susfs/kernel/setup.sh" | bash -s dev-susfs
