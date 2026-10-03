@@ -698,17 +698,16 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.CCACHE_REAL_KEY }}-${{ runner.os }}-${{ github.ref_name }}
          
-      - name: 应用KPM并修补内核
-        if: inputs.kpm_enable
+      - name: 应用SukiSU KPM二进制修补
         run: |
-          echo "正在应用KP-N并修补内核..."
+          echo "正在应用SukiSU KPM patch_linux修补内核..."
           cd kernel_workspace/common/out/arch/arm64/boot
-          wget https://github.com/KernelSU-Next/KPatch-Next/releases/latest/download/kptools-linux
-          wget https://github.com/KernelSU-Next/KPatch-Next/releases/latest/download/kpimg-linux
-          chmod +x ./kptools-linux
-          ./kptools-linux -p -i ./Image -k ./kpimg-linux -o ./oImage
+          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/latest/download/patch_linux
+          chmod +x patch_linux
+          ./patch_linux
           rm -f Image
           mv oImage Image
+          echo "KPM binary patch applied successfully"
           
       - name: 克隆 AnyKernel3 并打包
         id: create_zip
